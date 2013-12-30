@@ -52,7 +52,7 @@ entity CamCtl is
 		CLK_180 : in    STD_LOGIC;
 
 		--added by martin h
-		--SW_I : in std_logic_vector(7 downto 0);
+		SW_I : in std_logic_vector(6 downto 0);
 
 		----------------------------------------------------------------------------------
 		-- Camera signals
@@ -91,7 +91,7 @@ architecture Behavioral of CamCtl is
 	constant CMD_DELAY_CYCLES : NATURAL := natural(ceil(real(CMD_DELAY * 1000 * CLOCKFREQ)));
 
 	--modify this to reflect the number of configuration words
-	constant INIT_VECTORS : natural := 60;
+	constant INIT_VECTORS : natural := 59;
 	constant DATA_WIDTH   : integer := 33;
 	constant ADDR_WIDTH   : natural := natural(ceil(log(real(INIT_VECTORS), 2.0)));
 
@@ -158,7 +158,7 @@ architecture Behavioral of CamCtl is
 		IWR & x"33900002",
 		IWR & x"338CA120",              --capture mode options
 		IWR & x"339000E2",              --manual Exposure
-		IWR & x"33900002",              --manual Exposure all off 
+		--IWR & x"33900002",              --manual Exposure all off 
 		IWR & x"32DC0080",              --digital gain for all colors def val.
 		IWR & x"30280008",              --analogue gain global code default val.
 		IWR & x"338C221A",              --R12 shutter delay
@@ -172,9 +172,10 @@ architecture Behavioral of CamCtl is
 		IWR & x"338C222E",              --R9_step
 		IWR & x"3390009D",              --R9_step def val
 		IWR & x"301200FF",              --coarse integration time
-		IWR & x"3012FFFF"
+		IWR & x"3012009D"
 	);
 
+	signal expos : std_logic_vector(15 downto 0) := x"005D";
 	signal initWord, initFb : std_logic_vector(DATA_WIDTH - 1 downto 0);
 	signal initA            : natural range 0 to INIT_VECTORS := 0;
 	signal initEn, initFbWe : std_logic;
@@ -203,8 +204,32 @@ architecture Behavioral of CamCtl is
 	signal PClk_BUFG    : std_logic;
 begin
 	PWDN_O <= '0';                      --power up
-
-	itime <= IWR & x"3012FFFF";         --x"338C0000";
+	
+	exp_change : process(sw_i, expos)
+	begin
+		case sw_i is
+			when "0000000" => expos <= x"0000";
+			when "0000001" => expos <= x"009D";
+			when "0000010" => expos <= x"013A";
+			when "0000011" => expos <= x"01D7";
+			when "0000100" => expos <= x"0274";
+			when "0000101" => expos <= x"0311";
+			when "0000110" => expos <= x"03AE";
+			when "0000111" => expos <= x"044B";
+			when "0001000" => expos <= x"04E8";
+			when "0001001" => expos <= x"0585";
+			when "0001010" => expos <= x"0622";
+			when "0001011" => expos <= x"06BF";
+			when "0001100" => expos <= x"075C";
+			when "0001101" => expos <= x"07F9";
+			when "0001111" => expos <= x"0896";
+			when others => expos <= x"0000";
+		end case;
+		
+	end process exp_change;
+	
+	--itime <= IWR & x"3012FFFF";         --x"338C0000";
+	itime <= IWR & x"3012" & expos(15 downto 0); --added by Martin
 
 	BUFG_inst : BUFG
 		port map(
@@ -326,7 +351,7 @@ begin
 		end if;
 	end process;
 
-	initWord <= CamInitRAM(initA) when itimeEn = '0' else itime;
+	initWord <= CamInitRAM(initA) when itimeEn = '0' else itime; --changed by Martin H.
 	initFb   <= initWord(32 downto 0);  -- & regData1 & twiDo; --we feed read data back to the RAM
 
 	Init_itimeEn : process(CLK)
@@ -478,7 +503,7 @@ begin
 				nstate <= stRegAddr1;
 			when stDone =>
 				--stay here
-				if (itimeEn = '1') then
+				if (itimeEn = '1') then --added by M. Heide
 					nstate <= stIdle;
 				end if;
 			when others =>

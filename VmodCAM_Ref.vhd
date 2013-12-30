@@ -167,7 +167,7 @@ begin
 		CLK_I => CLK_I,
 		CLK_O => open,
 		RSTN_I => RESET_I,
-		SW_I => SW_I,
+		SW_I => SW_I, --changed by Martin Heide
 		SW_O => open,
 		RSEL_O => open, --resolution selector synchronized with PClk
 		MSEL_O => MSel, --mode selector synchronized with PClk
@@ -218,7 +218,7 @@ begin
 		DOCp0 => FbRdDatap0, --added by Martin Heide
 		CLKC => FbRdClk,
 		--RD_MODE => MSel,
-		RD_MODE => "00"&SW_I(5 downto 0),--changed by Martin Heide
+		RD_MODE => "00000000",--changed by Martin Heide
 		ENA => CamADV,
 		RSTA_I => FbWrARst,
 		DIA => CamAD,
@@ -322,6 +322,7 @@ FbWrBRst <= async_rst or not int_FVB;
 		RST_I => async_rst,
 		CLK => CamClk,
 		CLK_180 => CamClk_180,
+		SW_I => SW_I(6 downto 0),
 		SDA => CAMA_SDA,
 		SCL => CAMA_SCL,
 		D_I => int_CAMA_D_I,
@@ -363,7 +364,7 @@ FbWrBRst <= async_rst or not int_FVB;
 		Inst_HDR_wrapper : entity work.HDR_wrapper
 		    Port map (  clk_i => FbRdClk,
 									 rst_i => async_rst,
-									 sw_i => SW_I,
+									 sw_i => SW_I(7),
 									 FbRdDatap0		=> FbRdDatap0,
 									 FbRdDatap3		=> FbRdDatap3,
 									 hdr_image_o       => hdr_image);

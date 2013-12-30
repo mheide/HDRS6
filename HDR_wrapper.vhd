@@ -47,7 +47,7 @@ use work.inverse_pkg.ALL;
 entity HDR_wrapper is
     Port ( clk_i : in  STD_LOGIC;
            rst_i : in  STD_LOGIC;
-           sw_i : in  STD_LOGIC_VECTOR (7 downto 0);
+           sw_i : in  STD_LOGIC;
 			  FbRdDatap0		: 	in std_logic_vector(15 downto 0);
 			  FbRdDatap3		:  in std_logic_vector(15 downto 0);
 			  hdr_image_o         : out pixel_type);
@@ -59,7 +59,7 @@ architecture Behavioral of HDR_wrapper is
 begin
 	process
 	begin
-		if sw_i(7 downto 6) = "00" then
+		if sw_i = '0' then
 			hdr_image_o.red <= FbRdDatap0(15 downto 11)&"000";
 			hdr_image_o.green <= FbRdDatap0(10 downto 5)&"00";
 			hdr_image_o.blue <= FbRdDatap0(4 downto 0)&"000";
@@ -69,7 +69,7 @@ begin
 --			pictures(1).red <= FbRdDatap3(15 downto 11)&"000";
 --			pictures(1).green <= x"00";
 --			pictures(1).blue <= x"00";
-		elsif sw_i(7 downto 6) = "01" then
+		elsif sw_i = '1' then
 			hdr_image_o.red <=  FbRdDatap3(15 downto 11)&"000";
 			hdr_image_o.green <= FbRdDatap3(10 downto 5)&"00";
 			hdr_image_o.blue <= FbRdDatap3(4 downto 0)&"000";
@@ -91,12 +91,12 @@ begin
 		end if;
 	end process;
 	
-		pictures(0).red <= FbRdDatap0(15 downto 11)&"000";
-		pictures(0).green <= FbRdDatap0(10 downto 5)&"00";
-		pictures(0).blue <= FbRdDatap0(4 downto 0)&"000";
-		pictures(1).red <= FbRdDatap3(15 downto 11)&"000";
-		pictures(1).green <= FbRdDatap3(10 downto 5)&"00";
-		pictures(1).blue <= FbRdDatap3(4 downto 0)&"000";
+		--pictures(0).red <= FbRdDatap0(15 downto 11)&"000";
+		--pictures(0).green <= FbRdDatap0(10 downto 5)&"00";
+		--pictures(0).blue <= FbRdDatap0(4 downto 0)&"000";
+		--pictures(1).red <= FbRdDatap3(15 downto 11)&"000";
+		--pictures(1).green <= FbRdDatap3(10 downto 5)&"00";
+		--pictures(1).blue <= FbRdDatap3(4 downto 0)&"000";
 		
 	--pictures(0).red <= FbRdDatap0(15 downto 11)&"000";--wird nicht angezeigt
 	--pictures(0).red <= x"00";
